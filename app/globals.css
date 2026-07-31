@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  /* Single accent, used only for links and focus states. The rest of the UI
+     is ink-on-white so the property photos carry all the color. */
+  --color-accent: #1a56db;
+}
+
+body {
+  background: #ffffff;
+  color: #171717;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
