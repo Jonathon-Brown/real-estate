@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DescriptionCard } from "./description-card";
 import { Gallery } from "./gallery";
 
 // cache() dedupes the query when both generateMetadata and the page ask for
@@ -9,7 +10,9 @@ const getShoot = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("shoots")
-    .select("id, slug, address, photos(storage_path, sort_order)")
+    .select(
+      "id, slug, address, description_short, description_medium, description_long, photos(storage_path, sort_order)",
+    )
     .eq("slug", slug)
     .single();
   return data;
@@ -76,6 +79,18 @@ export default async function GalleryPage({
           <Gallery photos={photos} />
         )}
       </div>
+
+      {shoot.description_short &&
+        shoot.description_medium &&
+        shoot.description_long && (
+          <DescriptionCard
+            descriptions={{
+              short: shoot.description_short,
+              medium: shoot.description_medium,
+              long: shoot.description_long,
+            }}
+          />
+        )}
     </main>
   );
 }

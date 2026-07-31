@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { CopyButton } from "@/components/copy-button";
+import { GenerateDescriptionButton } from "./generate-description-button";
 import { NewShootForm } from "./new-shoot-form";
 
 export const metadata = { title: "Dashboard — ShootLink" };
@@ -9,7 +10,7 @@ export default async function DashboardPage() {
 
   const { data: shoots, error } = await supabase
     .from("shoots")
-    .select("id, slug, address, created_at, photos(count)")
+    .select("id, slug, address, created_at, description_short, photos(count)")
     .order("created_at", { ascending: false });
 
   return (
@@ -68,7 +69,13 @@ export default async function DashboardPage() {
                       {count} photo{count === 1 ? "" : "s"}
                     </p>
                   </div>
-                  <CopyButton path={`/g/${shoot.slug}`} />
+                  <span className="flex shrink-0 flex-wrap items-start justify-end gap-2">
+                    <GenerateDescriptionButton
+                      shootId={shoot.id}
+                      hasDescription={Boolean(shoot.description_short)}
+                    />
+                    <CopyButton path={`/g/${shoot.slug}`} />
+                  </span>
                 </li>
               );
             })}

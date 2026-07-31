@@ -25,8 +25,8 @@ storage, Anthropic API for descriptions. Deploys to Vercel.
    ```
 
    Fill in the values you just copied. `ANTHROPIC_API_KEY` comes from
-   [console.anthropic.com](https://console.anthropic.com) and is only needed
-   once listing descriptions land (Phase 3).
+   [console.anthropic.com](https://console.anthropic.com) — it powers the
+   "Generate description" button and never leaves the server.
 
 5. **Run it.**
 
