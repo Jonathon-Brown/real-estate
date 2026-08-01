@@ -8,9 +8,17 @@ export const metadata = { title: "Dashboard — ShootLink" };
 export default async function DashboardPage() {
   const supabase = await createClient();
 
+  // The proxy guarantees a signed-in user here. Filtering by owner as well as
+  // relying on RLS means a policy regression alone cannot leak another
+  // photographer's shoots.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: shoots, error } = await supabase
     .from("shoots")
     .select("id, slug, address, created_at, description_short, photos(count)")
+    .eq("user_id", user!.id)
     .order("created_at", { ascending: false });
 
   return (

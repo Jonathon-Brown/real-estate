@@ -1,7 +1,7 @@
 import { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
 import { type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Streaming a large zip can outlive the default function timeout on Vercel.
 export const maxDuration = 300;
@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: shoot } = await supabase
     .from("shoots")

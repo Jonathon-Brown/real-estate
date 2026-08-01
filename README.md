@@ -52,6 +52,7 @@ storage, Anthropic API for descriptions. Deploys to Vercel.
 - `app/dashboard` — photographer's side: create shoots, upload photos, copy links (login required)
 - `app/login`, `app/auth` — magic-link sign-in flow
 - `app/g/[slug]` — public gallery an agent sees (Phase 2)
-- `lib/supabase` — database client helpers (browser and server variants)
+- `lib/supabase` — database client helpers (browser, server, and a service-role
+  variant used only to serve public galleries)
 - `proxy.ts` — refreshes the session and keeps `/dashboard` behind login
 - `supabase/schema.sql` — the database schema; run in the Supabase SQL editor

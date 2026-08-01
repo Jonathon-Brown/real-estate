@@ -1,13 +1,13 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { DescriptionCard } from "./description-card";
 import { Gallery } from "./gallery";
 
 // cache() dedupes the query when both generateMetadata and the page ask for
 // the same shoot during one request.
 const getShoot = cache(async (slug: string) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("shoots")
     .select(
@@ -40,7 +40,7 @@ export default async function GalleryPage({
   const shoot = await getShoot(slug);
   if (!shoot) notFound();
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const photos = shoot.photos
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p, i) => ({

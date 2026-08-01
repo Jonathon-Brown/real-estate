@@ -37,6 +37,7 @@ export async function POST(
     .from("shoots")
     .select("id, address, beds, baths, sqft, notes, photos(storage_path, sort_order)")
     .eq("id", id)
+    .eq("user_id", user.id)
     .single();
 
   if (!shoot) {
