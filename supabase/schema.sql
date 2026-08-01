@@ -4,7 +4,7 @@
 -- Tables
 -- ============================================================
 
-create table public.shoots (
+create table if not exists public.shoots (
   id                 uuid primary key default gen_random_uuid(),
   slug               text not null unique,
   address            text not null,
@@ -19,7 +19,7 @@ create table public.shoots (
   created_at         timestamptz not null default now()
 );
 
-create table public.photos (
+create table if not exists public.photos (
   id           uuid primary key default gen_random_uuid(),
   shoot_id     uuid not null references public.shoots (id) on delete cascade,
   storage_path text not null,
@@ -28,7 +28,7 @@ create table public.photos (
 
 -- The gallery loads all photos for one shoot; this index makes that lookup
 -- instant instead of a full-table scan.
-create index photos_shoot_id_idx on public.photos (shoot_id);
+create index if not exists photos_shoot_id_idx on public.photos (shoot_id);
 
 -- ============================================================
 -- Row Level Security
@@ -39,35 +39,43 @@ alter table public.shoots enable row level security;
 alter table public.photos enable row level security;
 
 -- Public gallery: anyone (the "anon" role) can read.
+drop policy if exists "public read shoots" on public.shoots;
 create policy "public read shoots"
   on public.shoots for select
   using (true);
 
+drop policy if exists "public read photos" on public.photos;
 create policy "public read photos"
   on public.photos for select
   using (true);
 
 -- Writes: only authenticated (logged-in) users.
+drop policy if exists "authenticated write shoots" on public.shoots;
 create policy "authenticated write shoots"
   on public.shoots for insert to authenticated
   with check (true);
 
+drop policy if exists "authenticated update shoots" on public.shoots;
 create policy "authenticated update shoots"
   on public.shoots for update to authenticated
   using (true);
 
+drop policy if exists "authenticated delete shoots" on public.shoots;
 create policy "authenticated delete shoots"
   on public.shoots for delete to authenticated
   using (true);
 
+drop policy if exists "authenticated write photos" on public.photos;
 create policy "authenticated write photos"
   on public.photos for insert to authenticated
   with check (true);
 
+drop policy if exists "authenticated update photos" on public.photos;
 create policy "authenticated update photos"
   on public.photos for update to authenticated
   using (true);
 
+drop policy if exists "authenticated delete photos" on public.photos;
 create policy "authenticated delete photos"
   on public.photos for delete to authenticated
   using (true);
@@ -83,14 +91,17 @@ values ('photos', 'photos', true)
 on conflict (id) do nothing;
 
 -- Reading from a public bucket needs no policy; writing still does.
+drop policy if exists "authenticated upload photos" on storage.objects;
 create policy "authenticated upload photos"
   on storage.objects for insert to authenticated
   with check (bucket_id = 'photos');
 
+drop policy if exists "authenticated update photo objects" on storage.objects;
 create policy "authenticated update photo objects"
   on storage.objects for update to authenticated
   using (bucket_id = 'photos');
 
+drop policy if exists "authenticated delete photo objects" on storage.objects;
 create policy "authenticated delete photo objects"
   on storage.objects for delete to authenticated
   using (bucket_id = 'photos');
