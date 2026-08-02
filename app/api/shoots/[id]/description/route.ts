@@ -147,11 +147,7 @@ export async function POST(
     }
     raw = textBlock.text;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown API error";
-    return NextResponse.json(
-      { error: `Description generation failed: ${message}` },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: describeApiError(err) }, { status: 502 });
   }
 
   // Belt and suspenders: strip code fences before parsing, and verify all
@@ -199,6 +195,32 @@ export async function POST(
   }
 
   return NextResponse.json({ ok: true });
+}
+
+// The SDK's raw errors are JSON blobs aimed at developers. This route's
+// failures land in the photographer's dashboard, so say what went wrong and
+// what to do about it.
+function describeApiError(err: unknown): string {
+  if (err instanceof Anthropic.AuthenticationError) {
+    return "Anthropic rejected the API key. Check ANTHROPIC_API_KEY in .env.local.";
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return "Anthropic is rate limiting right now. Wait a minute and try again.";
+  }
+  if (err instanceof Anthropic.APIError) {
+    // Out of credits arrives as a plain 400, so it needs a message check.
+    if (/credit balance/i.test(err.message)) {
+      return "Your Anthropic account is out of credits. Add some at console.anthropic.com under Plans & Billing.";
+    }
+    if (err.status && err.status >= 500) {
+      return "Anthropic had a server error. Try regenerating in a moment.";
+    }
+    return `Anthropic returned an error (${err.status ?? "unknown"}). Try regenerating.`;
+  }
+  if (err instanceof Anthropic.APIConnectionError) {
+    return "Could not reach Anthropic. Check your internet connection.";
+  }
+  return "Description generation failed unexpectedly. Try regenerating.";
 }
 
 function buildPrompt(shoot: {
