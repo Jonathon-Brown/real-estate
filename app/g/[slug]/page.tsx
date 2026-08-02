@@ -18,6 +18,24 @@ const getShoot = cache(async (slug: string) => {
   return data;
 });
 
+// Every agent and seller who opens a gallery link sees this, so it is the
+// one marketing surface the deliverable already has. Unset means no footer —
+// the app still runs for anyone who hasn't filled it in.
+function studioCredit() {
+  const name = process.env.STUDIO_NAME?.trim();
+  if (!name) return null;
+
+  const rawUrl = process.env.STUDIO_URL?.trim();
+  return {
+    name,
+    // Accept "example.com" or "https://example.com"; show it without the
+    // protocol either way.
+    href: rawUrl ? (/^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`) : null,
+    label: rawUrl?.replace(/^https?:\/\//i, "").replace(/\/$/, "") ?? null,
+    email: process.env.STUDIO_EMAIL?.trim() || null,
+  };
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -40,6 +58,7 @@ export default async function GalleryPage({
   const shoot = await getShoot(slug);
   if (!shoot) notFound();
 
+  const studio = studioCredit();
   const supabase = createAdminClient();
   const photos = shoot.photos
     .sort((a, b) => a.sort_order - b.sort_order)
@@ -91,6 +110,37 @@ export default async function GalleryPage({
             }}
           />
         )}
+
+      {studio && (
+        <footer className="mt-16 border-t border-neutral-200 pt-6 text-sm text-neutral-500">
+          <p>
+            Photographed by{" "}
+            <span className="font-medium text-neutral-900">{studio.name}</span>
+          </p>
+          {(studio.href || studio.email) && (
+            <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+              {studio.href && (
+                <a
+                  href={studio.href}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-accent hover:underline"
+                >
+                  {studio.label}
+                </a>
+              )}
+              {studio.email && (
+                <a
+                  href={`mailto:${studio.email}`}
+                  className="text-accent hover:underline"
+                >
+                  {studio.email}
+                </a>
+              )}
+            </p>
+          )}
+        </footer>
+      )}
     </main>
   );
 }
